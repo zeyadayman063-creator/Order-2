@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة إدارة الأوردرات</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Tahoma,sans-serif}
+body{
+background:linear-gradient(135deg,#0f172a,#1e293b);
+min-height:100vh;color:#fff;padding:20px
+}
+.container{max-width:1100px;margin:auto}
+h1{text-align:center;margin-bottom:20px}
+.motivation{
+background:rgba(255,255,255,.08);
+padding:15px;border-radius:15px;text-align:center;margin-bottom:20px
+}
+.stats{
+display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+gap:15px;margin-bottom:20px
+}
+.card{
+background:rgba(255,255,255,.08);
+padding:15px;border-radius:15px;text-align:center
+}
+.form{
+display:flex;gap:10px;margin-bottom:20px
+}
+input{
+flex:1;padding:14px;border:none;border-radius:12px;font-size:16px
+}
+button{
+border:none;padding:14px 18px;border-radius:12px;cursor:pointer
+}
+.add{background:#2563eb;color:white}
+.orders{display:flex;flex-direction:column;gap:12px}
+.order{
+background:rgba(255,255,255,.08);
+padding:15px;border-radius:15px
+}
+.top{display:flex;justify-content:space-between;align-items:center}
+.status{
+padding:6px 12px;border-radius:20px;font-size:14px
+}
+.new{background:#16a34a}
+.progress{background:#ca8a04}
+.done{background:#2563eb}
+.actions{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.small{padding:8px 12px}
+.delete{background:#dc2626;color:#fff}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>🚀 منصة إدارة الأوردرات</h1>
+
+<div class="motivation">
+🔥 الإنجاز السريع والتنظيم الجيد يصنعان فريقًا أقوى كل يوم.
+</div>
+
+<div class="stats">
+<div class="card">📦 إجمالي الأوردرات<br><span id="total">0</span></div>
+<div class="card">🟢 جديدة<br><span id="newCount">0</span></div>
+<div class="card">🟡 جاري التنفيذ<br><span id="progressCount">0</span></div>
+<div class="card">🔵 تم التسليم<br><span id="doneCount">0</span></div>
+</div>
+
+<div class="form">
+<input id="orderInput" placeholder="اكتب الأوردر هنا">
+<button class="add" onclick="addOrder()">إضافة أوردر</button>
+</div>
+
+<div class="orders" id="orders"></div>
+</div>
+
+<script>
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+function save(){
+localStorage.setItem("orders",JSON.stringify(orders));
+render();
+}
+
+function addOrder(){
+const text=document.getElementById("orderInput").value.trim();
+if(!text) return;
+orders.push({
+id:Date.now(),
+text,
+status:"new",
+time:new Date().toLocaleString("ar-EG")
+});
+document.getElementById("orderInput").value="";
+save();
+}
+
+function setStatus(id,status){
+orders=orders.map(o=>o.id===id?{...o,status}:o);
+save();
+}
+
+function del(id){
+orders=orders.filter(o=>o.id!==id);
+save();
+}
+
+function render(){
+const box=document.getElementById("orders");
+box.innerHTML="";
+
+orders.forEach((o,i)=>{
+const statusText={new:"🟢 جديد",progress:"🟡 جاري التنفيذ",done:"🔵 تم التسليم"};
+const div=document.createElement("div");
+div.className="order";
+div.innerHTML=`
+<div class="top">
+<div>
+<b>#${i+1}</b><br>
+${o.text}<br>
+<small>${o.time}</small>
+</div>
+<div class="status ${o.status}">${statusText[o.status]}</div>
+</div>
+<div class="actions">
+<button class="small" onclick="setStatus(${o.id},'progress')">جاري التنفيذ</button>
+<button class="small" onclick="setStatus(${o.id},'done')">تم التسليم</button>
+<button class="small delete" onclick="del(${o.id})">حذف</button>
+</div>`;
+box.appendChild(div);
+});
+
+document.getElementById("total").textContent=orders.length;
+document.getElementById("newCount").textContent=orders.filter(x=>x.status==="new").length;
+document.getElementById("progressCount").textContent=orders.filter(x=>x.status==="progress").length;
+document.getElementById("doneCount").textContent=orders.filter(x=>x.status==="done").length;
+}
+
+render();
+</script>
+</body>
+</html>
