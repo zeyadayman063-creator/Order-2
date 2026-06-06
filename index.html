@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>منصة إدارة الأوردرات الاحترافية</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Cairo,Arial,sans-serif}
+body{
+background:linear-gradient(135deg,#0f172a,#1e293b,#334155);
+min-height:100vh;
+padding:20px;
+color:white;
+}
+.container{max-width:1200px;margin:auto}
+h1{text-align:center;margin-bottom:20px}
+.quote{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+padding:15px;
+border-radius:15px;
+text-align:center;
+margin-bottom:20px;
+}
+.stats{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+margin-bottom:20px;
+}
+.stat{
+background:rgba(255,255,255,.08);
+padding:20px;
+border-radius:15px;
+text-align:center;
+}
+.stat h2{margin-top:10px}
+.form{
+display:flex;
+gap:10px;
+margin-bottom:20px;
+}
+input{
+flex:1;
+padding:15px;
+border:none;
+border-radius:12px;
+font-size:16px;
+}
+.add{
+background:#2563eb;
+color:white;
+padding:15px 25px;
+border:none;
+border-radius:12px;
+cursor:pointer;
+}
+.orders{
+display:flex;
+flex-direction:column;
+gap:15px;
+}
+.order{
+background:rgba(255,255,255,.08);
+backdrop-filter:blur(10px);
+padding:15px;
+border-radius:15px;
+}
+.top{
+display:flex;
+justify-content:space-between;
+align-items:center;
+gap:10px;
+}
+.status{
+padding:6px 12px;
+border-radius:20px;
+font-size:14px;
+}
+.new{background:#16a34a}
+.progress{background:#ca8a04}
+.done{background:#2563eb}
+.actions{
+margin-top:10px;
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+.actions button{
+border:none;
+padding:10px;
+border-radius:10px;
+cursor:pointer;
+}
+.delete{
+background:#dc2626;
+color:white;
+}
+.progressBtn{background:#eab308}
+.doneBtn{background:#2563eb;color:white}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>🚀 منصة إدارة الأوردرات</h1>
+
+<div class="quote">
+🔥 كل أوردر يتم إنجازه يقرب الفريق من الهدف. حافظ على السرعة والجودة والتنظيم.
+</div>
+
+<div class="stats">
+<div class="stat">📦<h2 id="total">0</h2><p>إجمالي الأوردرات</p></div>
+<div class="stat">🟢<h2 id="newCount">0</h2><p>جديدة</p></div>
+<div class="stat">🟡<h2 id="progressCount">0</h2><p>جاري التنفيذ</p></div>
+<div class="stat">🔵<h2 id="doneCount">0</h2><p>تم التسليم</p></div>
+</div>
+
+<div class="form">
+<input id="orderInput" placeholder="اكتب الأوردر هنا...">
+<button class="add" onclick="addOrder()">إضافة أوردر</button>
+</div>
+
+<div class="orders" id="orders"></div>
+</div>
+
+<script>
+let orders=JSON.parse(localStorage.getItem("orders")||"[]");
+
+function save(){
+localStorage.setItem("orders",JSON.stringify(orders));
+render();
+}
+
+function addOrder(){
+let text=document.getElementById("orderInput").value.trim();
+if(!text) return;
+
+orders.push({
+id:Date.now(),
+text:text,
+status:"new",
+time:new Date().toLocaleString("ar-EG")
+});
+
+document.getElementById("orderInput").value="";
+save();
+}
+
+function setStatus(id,status){
+orders=orders.map(o=>o.id===id?{...o,status}:o);
+save();
+}
+
+function removeOrder(id){
+orders=orders.filter(o=>o.id!==id);
+save();
+}
+
+function render(){
+let box=document.getElementById("orders");
+box.innerHTML="";
+
+orders.forEach((o,index)=>{
+
+let txt={
+new:"🟢 جديد",
+progress:"🟡 جاري التنفيذ",
+done:"🔵 تم التسليم"
+};
+
+box.innerHTML+=`
+<div class="order">
+<div class="top">
+<div>
+<b>#${index+1}</b><br>
+${o.text}<br>
+<small>⏰ ${o.time}</small>
+</div>
+
+<div class="status ${o.status}">
+${txt[o.status]}
+</div>
+</div>
+
+<div class="actions">
+<button class="progressBtn" onclick="setStatus(${o.id},'progress')">جاري التنفيذ</button>
+<button class="doneBtn" onclick="setStatus(${o.id},'done')">تم التسليم</button>
+<button class="delete" onclick="removeOrder(${o.id})">حذف</button>
+</div>
+</div>`;
+});
+
+document.getElementById("total").innerText=orders.length;
+document.getElementById("newCount").innerText=orders.filter(x=>x.status==="new").length;
+document.getElementById("progressCount").innerText=orders.filter(x=>x.status==="progress").length;
+document.getElementById("doneCount").innerText=orders.filter(x=>x.status==="done").length;
+}
+
+render();
+</script>
+
+</body>
+</html>
